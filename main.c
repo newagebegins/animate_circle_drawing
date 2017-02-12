@@ -15,6 +15,9 @@ LRESULT CALLBACK wndProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 
 int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdShow) {
+  UNREFERENCED_PARAMETER(prevInst);
+  UNREFERENCED_PARAMETER(cmdLine);
+
   WNDCLASS wndClass = { 0 };
   wndClass.style = CS_HREDRAW | CS_VREDRAW;
   wndClass.lpfnWndProc = wndProc;
