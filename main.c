@@ -16,7 +16,7 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
   UNREFERENCED_PARAMETER(prevInst);
   UNREFERENCED_PARAMETER(cmdLine);
 
-  WNDCLASS wndClass = { 0 };
+  WNDCLASS wndClass = {0};
   wndClass.style = CS_HREDRAW | CS_VREDRAW;
   wndClass.lpfnWndProc = wndProc;
   wndClass.hInstance = inst;
@@ -27,9 +27,7 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
   int windowWidth = 1920/2;
   int windowHeight = 1080/2;
 
-  RECT crect;
-  crect.left = 0;
-  crect.top = 0;
+  RECT crect = {0};
   crect.right = windowWidth;
   crect.bottom = windowHeight;
 
@@ -43,9 +41,9 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
   UpdateWindow(wnd);
 
   float dt = 0.0f;
-  LARGE_INTEGER perfcFreq = { 0 };
-  LARGE_INTEGER perfc = { 0 };
-  LARGE_INTEGER prefcPrev = { 0 };
+  LARGE_INTEGER perfcFreq = {0};
+  LARGE_INTEGER perfc = {0};
+  LARGE_INTEGER prefcPrev = {0};
 
   QueryPerformanceFrequency(&perfcFreq);
   QueryPerformanceCounter(&perfc);
