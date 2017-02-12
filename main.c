@@ -1,7 +1,5 @@
 #include <windows.h>
-
-typedef int bool;
-enum { false, true };
+#include <stdbool.h>
 
 LRESULT CALLBACK wndProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
