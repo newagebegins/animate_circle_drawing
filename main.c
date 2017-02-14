@@ -2,7 +2,15 @@
 #include <stdbool.h>
 
 typedef enum {
-  COLOR_BLACK = 0x00000000
+  COLOR_BLACK   = 0xFF000000,
+  COLOR_WHITE   = 0xFFFFFFFF,
+  COLOR_GREEN   = 0xFF00FF00,
+  COLOR_RED     = 0xFFFF0000,
+  COLOR_BLUE    = 0xFF0000FF,
+  COLOR_YELLOW  = 0xFFFFFF00,
+  COLOR_MAGENTA = 0xFFFF00FF,
+  COLOR_CYAN    = 0xFF00FFFF,
+  COLOR_PINK    = 0xFFF6A5D1,
 } Color;
 
 typedef struct {
@@ -10,11 +18,18 @@ typedef struct {
   size_t size;
   int width;
   int height;
+  int windowWidth;
+  int windowHeight;
+  HDC deviceContext;
   BITMAPINFO info;
 } BackBuffer;
 
-BackBuffer makeBackBuffer(int width, int height) {
+BackBuffer makeBackBuffer(HDC deviceContext, int windowWidth, int windowHeight, int width, int height) {
   BackBuffer bb = {0};
+
+  bb.deviceContext = deviceContext;
+  bb.windowWidth = windowWidth;
+  bb.windowHeight = windowHeight;
 
   bb.size = width * height * sizeof(*bb.memory);
   bb.memory = malloc(bb.size);
@@ -32,8 +47,121 @@ BackBuffer makeBackBuffer(int width, int height) {
   return bb;
 }
 
+void displayBackBuffer(BackBuffer *bb) {
+  StretchDIBits(bb->deviceContext, 0, 0, bb->windowWidth, bb->windowHeight,
+                0, 0, bb->width, bb->height, bb->memory,
+                &bb->info, DIB_RGB_COLORS, SRCCOPY);
+}
+
 void clearBackBuffer(BackBuffer *bb, Color color) {
   memset(bb->memory, color, bb->size);
+}
+
+void setPixel(BackBuffer *bb, int x, int y, Color color) {
+  bb->memory[y*bb->width + x] = color;
+}
+
+void drawCircle(BackBuffer *bb, int x0, int y0, int radius, Color color) {
+  int x = radius;
+  int y = 0;
+  int err = 0;
+
+  while (x >= y) {
+    setPixel(bb, x0 + x, y0 + y, color);
+    setPixel(bb, x0 + y, y0 + x, color);
+    setPixel(bb, x0 - y, y0 + x, color);
+    setPixel(bb, x0 - x, y0 + y, color);
+    setPixel(bb, x0 - x, y0 - y, color);
+    setPixel(bb, x0 - y, y0 - x, color);
+    setPixel(bb, x0 + y, y0 - x, color);
+    setPixel(bb, x0 + x, y0 - y, color);
+
+    if (err <= 0) {
+      y += 1;
+      err += 2*y + 1;
+    }
+    if (err > 0) {
+      x -= 1;
+      err -= 2*x + 1;
+    }
+  }
+}
+
+typedef struct {
+  int x0;
+  int y0;
+  int radius;
+  float setPixelTime;
+  int x;
+  int y;
+  int err;
+  float t;
+  int n;
+} AnimateCircleState;
+
+AnimateCircleState animateCircleInit(int x0, int y0, int radius, float setPixelTime) {
+  AnimateCircleState state = {0};
+  state.x0 = x0;
+  state.y0 = y0;
+  state.radius = radius;
+  state.setPixelTime = setPixelTime;
+  state.x = radius;
+  state.n = 1;
+  return state;
+}
+
+void animateCircle(AnimateCircleState *state, BackBuffer *bb, float dt) {
+  if (state->x < state->y) {
+    return;
+  }
+
+  state->t += dt;
+
+  while (state->t >= state->setPixelTime) {
+    state->t -= state->setPixelTime;
+
+    switch (state->n) {
+      case 1:
+        setPixel(bb, state->x0 + state->x, state->y0 + state->y, COLOR_WHITE);
+        break;
+      case 2:
+        setPixel(bb, state->x0 + state->y, state->y0 + state->x, COLOR_GREEN);
+        break;
+      case 3:
+        setPixel(bb, state->x0 - state->y, state->y0 + state->x, COLOR_RED);
+        break;
+      case 4:
+        setPixel(bb, state->x0 - state->x, state->y0 + state->y, COLOR_BLUE);
+        break;
+      case 5:
+        setPixel(bb, state->x0 - state->x, state->y0 - state->y, COLOR_YELLOW);
+        break;
+      case 6:
+        setPixel(bb, state->x0 - state->y, state->y0 - state->x, COLOR_MAGENTA);
+        break;
+      case 7:
+        setPixel(bb, state->x0 + state->y, state->y0 - state->x, COLOR_CYAN);
+        break;
+      case 8:
+        setPixel(bb, state->x0 + state->x, state->y0 - state->y, COLOR_PINK);
+        break;
+    }
+
+    ++state->n;
+
+    if (state->n > 8) {
+      state->n = 1;
+
+      if (state->err <= 0) {
+        state->y += 1;
+        state->err += 2*state->y + 1;
+      }
+      if (state->err > 0) {
+        state->x -= 1;
+        state->err -= 2*state->x + 1;
+      }
+    }
+  }
 }
 
 LRESULT CALLBACK wndProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -83,10 +211,12 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
   QueryPerformanceFrequency(&perfcFreq);
   QueryPerformanceCounter(&perfc);
 
-  HDC hDC = GetDC(wnd);
-  BackBuffer bb = makeBackBuffer(windowWidth/2, windowHeight/2);
+  BackBuffer bb = makeBackBuffer(GetDC(wnd), windowWidth, windowHeight, windowWidth/4, windowHeight/4);
+  clearBackBuffer(&bb, COLOR_BLACK);
 
   bool running = true;
+
+  AnimateCircleState animateCircleState = animateCircleInit(bb.width/2, bb.height/2, 20, 0.02f);
 
   while (running) {
     prefcPrev = perfc;
@@ -116,9 +246,8 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
       }
     }
 
-    clearBackBuffer(&bb, COLOR_BLACK);
-    StretchDIBits(hDC, 0, 0, windowWidth, windowHeight,
-                  0, 0, bb.width, bb.height, bb.memory,
-                  &bb.info, DIB_RGB_COLORS, SRCCOPY);
+    //clearBackBuffer(&bb, COLOR_BLACK);
+    animateCircle(&animateCircleState, &bb, dt);
+    displayBackBuffer(&bb);
   }
 }
