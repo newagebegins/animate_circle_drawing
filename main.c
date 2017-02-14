@@ -95,7 +95,7 @@ typedef struct {
   int x;
   int y;
   float t;
-  int n;
+  int currentOctant;
 } AnimateCircleState;
 
 AnimateCircleState animateCircleInit(int x0, int y0, int radius, float setPixelTime) {
@@ -105,7 +105,7 @@ AnimateCircleState animateCircleInit(int x0, int y0, int radius, float setPixelT
   state.radiusSquared = radius*radius;
   state.setPixelTime = setPixelTime;
   state.x = radius;
-  state.n = 1;
+  state.currentOctant = 1;
   return state;
 }
 
@@ -119,7 +119,7 @@ void animateCircle(AnimateCircleState *state, BackBuffer *bb, float dt) {
   while (state->t >= state->setPixelTime) {
     state->t -= state->setPixelTime;
 
-    switch (state->n) {
+    switch (state->currentOctant) {
       case 1:
         setPixel(bb, state->x0 + state->x, state->y0 + state->y, COLOR_WHITE);
         break;
@@ -146,10 +146,10 @@ void animateCircle(AnimateCircleState *state, BackBuffer *bb, float dt) {
         break;
     }
 
-    ++state->n;
+    ++state->currentOctant;
 
-    if (state->n > 8) {
-      state->n = 1;
+    if (state->currentOctant > 8) {
+      state->currentOctant = 1;
       state->y += 1;
 
       int ySquared = state->y*state->y;
@@ -215,7 +215,7 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
 
   bool running = true;
 
-  AnimateCircleState animateCircleState = animateCircleInit(bb.width/2, bb.height/2, 20, 0.01f);
+  AnimateCircleState animateCircleState = animateCircleInit(bb.width/2, bb.height/2, bb.height/4, 0.01f);
 
   while (running) {
     prefcPrev = perfc;
