@@ -94,30 +94,14 @@ void animateCircle(AnimateCircleState *state, BackBuffer *bb, float dt) {
     state->t -= state->setPixelTime;
 
     switch (state->currentOctant) {
-      case 1:
-        setPixel(bb, state->x0 + state->x, state->y0 + state->y, COLOR_WHITE);
-        break;
-      case 2:
-        setPixel(bb, state->x0 + state->y, state->y0 + state->x, COLOR_GREEN);
-        break;
-      case 3:
-        setPixel(bb, state->x0 - state->y, state->y0 + state->x, COLOR_RED);
-        break;
-      case 4:
-        setPixel(bb, state->x0 - state->x, state->y0 + state->y, COLOR_BLUE);
-        break;
-      case 5:
-        setPixel(bb, state->x0 - state->x, state->y0 - state->y, COLOR_YELLOW);
-        break;
-      case 6:
-        setPixel(bb, state->x0 - state->y, state->y0 - state->x, COLOR_MAGENTA);
-        break;
-      case 7:
-        setPixel(bb, state->x0 + state->y, state->y0 - state->x, COLOR_CYAN);
-        break;
-      case 8:
-        setPixel(bb, state->x0 + state->x, state->y0 - state->y, COLOR_PINK);
-        break;
+      case 1: setPixel(bb, state->x0 + state->x, state->y0 + state->y, COLOR_WHITE); break;
+      case 2: setPixel(bb, state->x0 + state->y, state->y0 + state->x, COLOR_GREEN); break;
+      case 3: setPixel(bb, state->x0 - state->y, state->y0 + state->x, COLOR_RED); break;
+      case 4: setPixel(bb, state->x0 - state->x, state->y0 + state->y, COLOR_BLUE); break;
+      case 5: setPixel(bb, state->x0 - state->x, state->y0 - state->y, COLOR_YELLOW); break;
+      case 6: setPixel(bb, state->x0 - state->y, state->y0 - state->x, COLOR_MAGENTA); break;
+      case 7: setPixel(bb, state->x0 + state->y, state->y0 - state->x, COLOR_CYAN); break;
+      case 8: setPixel(bb, state->x0 + state->x, state->y0 - state->y, COLOR_PINK); break;
     }
 
     ++state->currentOctant;
@@ -219,7 +203,6 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
       }
     }
 
-    //clearBackBuffer(&bb, COLOR_BLACK);
     animateCircle(&animateCircleState, &bb, dt);
     displayBackBuffer(&bb);
   }
