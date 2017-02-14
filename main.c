@@ -61,32 +61,6 @@ void setPixel(BackBuffer *bb, int x, int y, Color color) {
   bb->memory[y*bb->width + x] = color;
 }
 
-void drawCircle(BackBuffer *bb, int x0, int y0, int radius, Color color) {
-  int x = radius;
-  int y = 0;
-  int err = 0;
-
-  while (x >= y) {
-    setPixel(bb, x0 + x, y0 + y, color);
-    setPixel(bb, x0 + y, y0 + x, color);
-    setPixel(bb, x0 - y, y0 + x, color);
-    setPixel(bb, x0 - x, y0 + y, color);
-    setPixel(bb, x0 - x, y0 - y, color);
-    setPixel(bb, x0 - y, y0 - x, color);
-    setPixel(bb, x0 + y, y0 - x, color);
-    setPixel(bb, x0 + x, y0 - y, color);
-
-    if (err <= 0) {
-      y += 1;
-      err += 2*y + 1;
-    }
-    if (err > 0) {
-      x -= 1;
-      err -= 2*x + 1;
-    }
-  }
-}
-
 typedef struct {
   int x0;
   int y0;
