@@ -141,11 +141,11 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
   wndClass.lpfnWndProc = wndProc;
   wndClass.hInstance = inst;
   wndClass.hCursor = LoadCursor(0, IDC_ARROW);
-  wndClass.lpszClassName = "Pinball";
+  wndClass.lpszClassName = "animate_circle_drawing";
   RegisterClass(&wndClass);
 
-  int windowWidth = 1920/2;
-  int windowHeight = 1080/2;
+  int windowWidth = 1920/4;
+  int windowHeight = windowWidth;
 
   RECT crect = {0};
   crect.right = windowWidth;
@@ -154,7 +154,7 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
   DWORD wndStyle = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
   AdjustWindowRect(&crect, wndStyle, 0);
 
-  HWND wnd = CreateWindowEx(0, wndClass.lpszClassName, "Pinball", wndStyle, 300, 0,
+  HWND wnd = CreateWindowEx(0, wndClass.lpszClassName, "animate_circle_drawing", wndStyle, 300, 100,
                             crect.right - crect.left, crect.bottom - crect.top,
                             0, 0, inst, 0);
   ShowWindow(wnd, cmdShow);
@@ -172,8 +172,9 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
   clearBackBuffer(&bb, COLOR_BLACK);
 
   bool running = true;
+  float startupDelay = 0.5f;
 
-  AnimateCircleState animateCircleState = animateCircleInit(bb.width/2, bb.height/2, bb.height/4, 0.01f);
+  AnimateCircleState animateCircleState = animateCircleInit(bb.width/2, bb.height/2, bb.width/2 - 4, 0.01f);
 
   while (running) {
     prefcPrev = perfc;
@@ -203,7 +204,11 @@ int CALLBACK WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdS
       }
     }
 
-    animateCircle(&animateCircleState, &bb, dt);
+    startupDelay -= dt;
+    if (startupDelay <= 0) {
+      animateCircle(&animateCircleState, &bb, dt);
+    }
+
     displayBackBuffer(&bb);
   }
 }
